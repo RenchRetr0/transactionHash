@@ -67,20 +67,4 @@ export default class StatusApi extends EventEmitter {
         await s.emit('event', transfers, transferMint, DataBase);
 
     }
-
-    public static async TranshHash(transfers: { account: SignerWithAddress, owner: SignerWithAddress, values: string}, transferMint: any) {
-        const { account, owner, values} = transfers;
-
-        transferMint.on("Transfer", (account: SignerWithAddress, owner: SignerWithAddress, values: string, event: any) => {
-            let info = {
-                from: account,
-                to: owner,
-                value: values,
-                data: event,
-            };
-            console.log(JSON.stringify(info, null, 4));
-        });
-
-        transferMint.emit('Transfer', account, owner, values);
-    }
 };
