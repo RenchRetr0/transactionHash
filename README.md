@@ -48,3 +48,7 @@
 
 * Посмотреть чек "getTransactionReceipt" можно по ссылке "http://localhost:3040/search/hash" метод Post. Указав следующие данные:
     * hash - В базе данных подписана как "block_hash_from".
+
+___
+## Зпуск "Swagger"
+Вбить в консоль "npm run start" и в браузере по ссылке "http://localhost:3040/" откроется "swagger".
