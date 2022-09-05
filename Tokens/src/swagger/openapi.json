@@ -1,0 +1,985 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Токены",
+    "version": "0.0.1"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3040",
+      "description": "Dev server"
+    }
+  ],
+  "paths": {
+    "/user/signUp": {
+      "post": {
+        "summary": "Registration Method",
+        "tags": [
+          "User"
+        ],
+        "operationId": "createUser",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful registration with response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignUpUser"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Not all data entered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Parameters400"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Everything non-standard",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/signIn": {
+      "post": {
+        "summary": "Authorization Method",
+        "tags": [
+          "User"
+        ],
+        "operationId": "signIn",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestUser"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful authorization with response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponsesUser"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Not all data entered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Parameters400"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not all data entered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/404"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Everything non-standard",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trans/smart": {
+      "post": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Creating a smart contract",
+        "tags": [
+          "Smart"
+        ],
+        "operationId": "SmartCreate",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestSmart"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful creation of a smart contract with a response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponsesSmart"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Not all data entered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Parameters400"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Everything non-standard",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trans/ballance": {
+      "post": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Getting the number of tokens",
+        "tags": [
+          "Smart"
+        ],
+        "operationId": "BallanceResponses",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestBalance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful withdrawal of tokens",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponsesBalance"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Not all data entered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Parameters400"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Everything non-standard",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trans/mint": {
+      "post": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Getting the number of tokens",
+        "tags": [
+          "Smart"
+        ],
+        "operationId": "TransactionResponses",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestTransaction"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful replenishment of tokens",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponsesTransaction"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Not all data entered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Parameters400"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Everything non-standard",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search": {
+      "get": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Getting transaction history",
+        "tags": [
+          "Search"
+        ],
+        "operationId": "Histories",
+        "responses": {
+          "201": {
+            "description": "Successful acquisition of stories",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponsesHitories"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Not all data entered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Parameters400"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Everything non-standard",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search/address": {
+      "post": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Address history search",
+        "tags": [
+          "Search"
+        ],
+        "operationId": "SearchAddress",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestAddress"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful history search by address",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponsesHitories"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Not all data entered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Parameters400"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Everything non-standard",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search/hash": {
+      "post": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Transaction Block View",
+        "tags": [
+          "Search"
+        ],
+        "operationId": "SearchHash",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestHash"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful history search by address",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponsesTransactionHash"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Not all data entered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Parameters400"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Everything non-standard",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "404": {
+        "title": "Error Password",
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 404
+          },
+          "message": {
+            "type": "string",
+            "example": "Cannot find user with current login."
+          }
+        }
+      },
+      "User": {
+        "title": "Data User",
+        "type": "object",
+        "required": [
+          "login",
+          "address",
+          "password"
+        ],
+        "properties": {
+          "login": {
+            "type": "string",
+            "example": "John"
+          },
+          "address": {
+            "type": "string",
+            "example": "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc"
+          },
+          "password": {
+            "type": "string",
+            "example": "TerfGert43!"
+          }
+        }
+      },
+      "SignUpUser": {
+        "title": "Responses User",
+        "type": "object",
+        "required": [
+          "status",
+          "message"
+        ],
+        "properties": {
+          "status": {
+            "type": "integer",
+            "example": 201
+          },
+          "message": {
+            "type": "string",
+            "example": "User was successfully created."
+          }
+        }
+      },
+      "User2": {
+        "title": "User for respon",
+        "type": "object",
+        "required": [
+          "login",
+          "address",
+          "role"
+        ],
+        "properties": {
+          "login": {
+            "type": "string",
+            "example": "John"
+          },
+          "address": {
+            "type": "string",
+            "example": "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc"
+          },
+          "role": {
+            "$ref": "#/components/schemas/Role"
+          }
+        }
+      },
+      "Role": {
+        "title": "User roles",
+        "type": "object",
+        "required": [
+          "role"
+        ],
+        "properties": {
+          "role": {
+            "type": "string",
+            "example": "SuperAdmin"
+          }
+        }
+      },
+      "Parameters400": {
+        "title": "Error Parameters",
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 400
+          },
+          "message": {
+            "type": "string",
+            "example": "All parameters are required."
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 500
+          },
+          "message": {
+            "type": "string",
+            "example": "Internal server error: could not connect to database."
+          }
+        }
+      },
+      "RequestUser": {
+        "title": "Request User",
+        "type": "object",
+        "required": [
+          "login",
+          "password"
+        ],
+        "properties": {
+          "login": {
+            "type": "string",
+            "example": "John"
+          },
+          "password": {
+            "type": "string",
+            "example": "TerfGert43!"
+          }
+        }
+      },
+      "ResponsesUser": {
+        "title": "Respon User",
+        "type": "object",
+        "required": [
+          "status",
+          "message",
+          "token"
+        ],
+        "properties": {
+          "status": {
+            "type": "number",
+            "example": 201
+          },
+          "User": {
+            "$ref": "#/components/schemas/User2"
+          },
+          "message": {
+            "type": "string",
+            "example": "ok"
+          },
+          "token": {
+            "type": "string"
+          }
+        }
+      },
+      "RequestSmart": {
+        "title": "Creating a smart contract",
+        "type": "object",
+        "required": [
+          "name",
+          "symbol"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Super Center Token"
+          },
+          "symbol": {
+            "type": "string",
+            "example": "SCT"
+          }
+        }
+      },
+      "Smart": {
+        "title": "Smart",
+        "type": "object",
+        "required": [
+          "address",
+          "name",
+          "symbol",
+          "Tokens"
+        ],
+        "properties": {
+          "address": {
+            "type": "string",
+            "example": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+          },
+          "name": {
+            "type": "string",
+            "example": "Super Center Token"
+          },
+          "symbol": {
+            "type": "string",
+            "example": "SCT"
+          },
+          "Tokens": {
+            "type": "number",
+            "example": 0
+          }
+        }
+      },
+      "ResponsesSmart": {
+        "title": "Response of the generated smart contract",
+        "type": "object",
+        "required": [
+          "status",
+          "message"
+        ],
+        "properties": {
+          "status": {
+            "type": "number",
+            "example": 201
+          },
+          "message": {
+            "type": "string",
+            "example": "Contract was successfully created."
+          },
+          "Smart": {
+            "$ref": "#/components/schemas/Smart"
+          }
+        }
+      },
+      "RequestBalance": {
+        "title": "Balance request",
+        "type": "object",
+        "required": [
+          "smart"
+        ],
+        "properties": {
+          "smart": {
+            "type": "string",
+            "example": "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+          }
+        }
+      },
+      "ResponsesBalance": {
+        "title": "Balance respon",
+        "type": "object",
+        "required": [
+          "status",
+          "message"
+        ],
+        "properties": {
+          "status": {
+            "type": "number",
+            "example": 201
+          },
+          "message": {
+            "type": "string",
+            "example": "Your balance: 0.0"
+          }
+        }
+      },
+      "RequestTransaction": {
+        "title": "Transaction request",
+        "type": "object",
+        "required": [
+          "tokens",
+          "smart"
+        ],
+        "properties": {
+          "tokens": {
+            "type": "string",
+            "example": "5"
+          },
+          "smart": {
+            "type": "string",
+            "example": "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+          }
+        }
+      },
+      "ResponsesTransaction": {
+        "title": "Transaction respon",
+        "type": "object",
+        "required": [
+          "status",
+          "message"
+        ],
+        "properties": {
+          "status": {
+            "type": "number",
+            "example": 201
+          },
+          "message": {
+            "type": "string",
+            "example": "The funds have been sent."
+          }
+        }
+      },
+      "Status": {
+        "title": "Status",
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "success"
+          }
+        }
+      },
+      "History": {
+        "title": "History",
+        "type": "object",
+        "required": [
+          "from_id",
+          "to_id",
+          "smart_id",
+          "value",
+          "status_from_id",
+          "status_to_id",
+          "block_hash_from",
+          "block_hash_to"
+        ],
+        "properties": {
+          "from_id": {
+            "$ref": "#/components/schemas/User2"
+          },
+          "to_id": {
+            "$ref": "#/components/schemas/User2"
+          },
+          "smart_id": {
+            "$ref": "#/components/schemas/Smart"
+          },
+          "value": {
+            "type": "number",
+            "example": 5
+          },
+          "status_from_id": {
+            "$ref": "#/components/schemas/Status"
+          },
+          "status_to_id": {
+            "$ref": "#/components/schemas/Status"
+          },
+          "block_hash_from": {
+            "type": "string",
+            "example": "0x779d56835fe937c841ecb285c0479554630e4b292239031b20e7f40938e23fe6"
+          },
+          "block_hash_to": {
+            "type": "string",
+            "example": "0x779d56835fe937c841ecb285c0479554630e4b292239031b20e7f40938e23fe6"
+          }
+        }
+      },
+      "ResponsesHitories": {
+        "title": "History respon",
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/History"
+        }
+      },
+      "RequestAddress": {
+        "title": "Search for address",
+        "type": "object",
+        "required": [
+          "address"
+        ],
+        "properties": {
+          "address": {
+            "type": "string",
+            "example": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+          }
+        }
+      },
+      "GasUsed": {
+        "title": "gasUser",
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "example": "BigNumber"
+          },
+          "hex": {
+            "type": "string",
+            "example": "0xce1a"
+          }
+        }
+      },
+      "Topics": {
+        "title": "topics",
+        "type": "string",
+        "nullable": true,
+        "enum": [
+          "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+          "0x00000000000000000000000015d34aaf54267db7d7c367839aaf71a00a2c6a65",
+          "0x0000000000000000000000003c44cdddb6a900fa2b585dd299e03d12fa4293bc"
+        ]
+      },
+      "Logs": {
+        "title": "logs",
+        "type": "object",
+        "properties": {
+          "transactionIndex": {
+            "type": "number",
+            "example": 0
+          },
+          "blockNumber": {
+            "type": "number",
+            "example": 3
+          },
+          "transactionHash": {
+            "type": "string",
+            "example": "0x8df1fd240a3de14375871c34d880a670f08ba1e6a3f5b61eaf67cd987494fe90"
+          },
+          "address": {
+            "type": "string",
+            "example": "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+          },
+          "topics": {
+            "$ref": "#/components/schemas/Topics"
+          },
+          "data": {
+            "type": "string",
+            "example": "0x0000000000000000000000000000000000000000000000004563918244f40000"
+          },
+          "logIndex": {
+            "type": "number",
+            "example": 0
+          },
+          "blockHash": {
+            "type": "string",
+            "example": "0x66477cc348a98c694abb38489b99f4a22a7a7c24041488b35f536959492b7d6b"
+          }
+        }
+      },
+      "Receipt": {
+        "title": "receipt",
+        "type": "object",
+        "properties": {
+          "to": {
+            "type": "string",
+            "example": "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+          },
+          "from": {
+            "type": "string",
+            "example": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65"
+          },
+          "contractAddress": {
+            "type": "string",
+            "example": null
+          },
+          "transactionIndex": {
+            "type": "number",
+            "example": 0
+          },
+          "gasUsed": {
+            "$ref": "#/components/schemas/GasUsed"
+          },
+          "logsBloom": {
+            "type": "string",
+            "example": "0x00000000040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000008000000000000000000000000000000000000000000000040000000000000000000000000000800000000000000000010000000000000000000000000000000000000000000000000000000000000000300000000000000000000200000000000000000000000000000000000000000000000000000000042000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000000"
+          },
+          "blockHash": {
+            "type": "string",
+            "example": "0x66477cc348a98c694abb38489b99f4a22a7a7c24041488b35f536959492b7d6b"
+          },
+          "transactionHash": {
+            "type": "string",
+            "example": "0x8df1fd240a3de14375871c34d880a670f08ba1e6a3f5b61eaf67cd987494fe90"
+          },
+          "logs": {
+            "$ref": "#/components/schemas/Logs"
+          },
+          "blockNumber": {
+            "type": "number",
+            "example": 2
+          },
+          "status": {
+            "type": "number",
+            "example": 1
+          },
+          "type": {
+            "type": "number",
+            "example": 2
+          }
+        }
+      },
+      "ResponsesTransactionHash": {
+        "title": "Hash transaction respons",
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "example": 201
+          },
+          "receipt": {
+            "$ref": "#/components/schemas/Receipt"
+          }
+        }
+      },
+      "RequestHash": {
+        "title": "Hash transaction request",
+        "type": "object",
+        "required": [
+          "hash"
+        ],
+        "properties": {
+          "hash": {
+            "type": "string",
+            "example": "0x8df1fd240a3de14375871c34d880a670f08ba1e6a3f5b61eaf67cd987494fe90"
+          }
+        }
+      }
+    }
+  }
+}

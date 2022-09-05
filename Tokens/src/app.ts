@@ -4,6 +4,9 @@ import https from "https";
 import { readFileSync } from "fs";
 import { homedir } from "os";
 
+import swaggerUI from "swagger-ui-express";
+import swaggerDocument from "./swagger/openapi.json";
+
 export default class App {
     app: Application;
     port: number;
@@ -13,6 +16,7 @@ export default class App {
         this.port = config.port;
         this.middlewares(config.middlewares);
         this.routes(config.routes);
+        this.app.use('/', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
     }
 
     private middlewares(middlewares: {
