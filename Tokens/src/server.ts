@@ -2,9 +2,10 @@ import App from "./app";
 import cors from "cors";
 import express from "express";
 import morgan from "morgan";
-import TransRoute from './router/transactionRoutes';
+import TransactionsRoutes from './router/transactionsRoutes';
 import UserRoutes from "./router/userRoutes";
 import SearchRoutes from "./router/searchRoutes";
+
 const app = new App({
     port: Number(process.env.PORT) || 3040,
     middlewares: [
@@ -16,7 +17,7 @@ const app = new App({
         morgan('dev'),
     ],
     routes: [
-        new TransRoute(),
+        new TransactionsRoutes(),
         new UserRoutes(),
         new SearchRoutes()
     ]

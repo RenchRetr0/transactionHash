@@ -1,7 +1,6 @@
 import express from "express";
 import { Request, Response } from "express";
-import validateJWT from "../api/validateJWT";
-import TransApi from "../api/trans-api";
+import AuthValidateJWT from "../api/AuthValidateJWT";
 import SearchApi from "../api/search-api";
 
 export default class SearchRoutes {
@@ -12,14 +11,14 @@ export default class SearchRoutes {
     }
 
     private initRoutes(): void {
-        this.router.get('/search', validateJWT, this.historys);
-        this.router.post('/search/address', validateJWT, this.history);
-        this.router.post('/search/hash', validateJWT, this.blockhash);
+        this.router.get('/search', AuthValidateJWT, this.historys);
+        this.router.post('/search/addressUser', AuthValidateJWT, this.history);
+        this.router.post('/search/transactionreceipt', AuthValidateJWT, this.blockhash);
     }
 
     private async historys(req: Request, res: Response) {
         try {
-            const response = await SearchApi.GetHistorys(req.body);
+            const response = await SearchApi.GetHistorys();
             res.status(response.status).json(response);
         } catch (e) {
             console.log(e);
@@ -39,7 +38,7 @@ export default class SearchRoutes {
 
     private async blockhash(req: Request, res: Response) {
         try {
-            const response = await SearchApi.GetHash(req.body);
+            const response = await SearchApi.GetTransactionReceipt(req.body);
             res.status(response.status).json(response);
         } catch (e) {
             console.log(e);

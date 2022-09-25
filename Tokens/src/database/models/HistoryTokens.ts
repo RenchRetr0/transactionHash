@@ -41,6 +41,13 @@ export default class HistoryTokens extends Model {
     id: number;
 
     @ForeignKey(() => User)
+    @AllowNull(false)
+    @Column({
+        type: DataTypes.BIGINT,
+    })
+    fromId: number;
+
+    @ForeignKey(() => User)
     @AllowNull(true)
     @Column({
         type: DataTypes.BIGINT,
@@ -49,13 +56,6 @@ export default class HistoryTokens extends Model {
 
     @BelongsTo(() => User, { as: 'to', foreignKey: 'toId' })
     public User_to: User;
-
-    @ForeignKey(() => User)
-    @AllowNull(false)
-    @Column({
-        type: DataTypes.BIGINT,
-    })
-    fromId: number;
 
     @BelongsTo(() => User, { as: 'from', foreignKey: 'fromId' })
     public User_from: User;

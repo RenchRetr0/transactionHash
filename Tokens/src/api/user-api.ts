@@ -3,8 +3,6 @@ import CustomError from "../CustomError";
 import User from "../database/models/User";
 import jwt from "jsonwebtoken";
 import { Op, Sequelize } from "sequelize";
-import Contract from "../database/models/Contract";
-import TransApi from "./trans-api";
 import bcrypt from "bcrypt";
 import sequelize from "../database/sequelize";
 import Role from "../database/models/Role";
@@ -99,21 +97,21 @@ export default class UserApi {
                 });
             }
 
-            let found = await User.findOne({
+            let userFound = await User.findOne({
                 include: [Role],
                 where: {
                     login: login,
                 }
             });
 
-            if (!found) {
+            if (!userFound) {
                 throw new CustomError({
                     status: 404,
                     message: "Cannot find user with current login",
                 });
             }
             
-            const hashCompare = await bcrypt.compare(password, found.password);
+            const hashCompare = await bcrypt.compare(password, userFound.password);
             if (!hashCompare) {
                 throw new CustomError({
                     status: 400,
@@ -121,17 +119,17 @@ export default class UserApi {
                 });
             };
 
-            const user = [found.login, found.address, found.role.role];
+            const user = [userFound.login, userFound.address, userFound.role.role];
 
             const token = jwt.sign(
                 {
                     data: {
-                        id: found.id,
-                        login: found.login,
-                        addresx: found.address,
-                        roleid: found.role.role,
-                        createdAt: found.createdAt,
-                        updatedAt: found.updatedAt,
+                        id: userFound.id,
+                        login: userFound.login,
+                        addresx: userFound.address,
+                        role: userFound.role.role,
+                        createdAt: userFound.createdAt,
+                        updatedAt: userFound.updatedAt,
                     },
                 },
                 process.env.TOKEN_SECRET,
@@ -151,7 +149,7 @@ export default class UserApi {
         }
     }
 
-    public static async validateJwt(options: { token: string }) {
+    public static async UserValidateJwt(options: { token: string }) {
         try {
             const { token } = options;
 
