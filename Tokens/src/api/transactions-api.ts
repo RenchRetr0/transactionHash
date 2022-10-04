@@ -1,13 +1,17 @@
 import dotenv from "dotenv";
 import CustomError from "../CustomError";
-import { Op, Sequelize } from "sequelize";
+import { Sequelize } from "sequelize";
 import sequelize from "../database/sequelize";
 import hre from "hardhat";
-import Contract from "../database/models/Contract";
-import ListenerApi from "./listener-api";
+import ContractDB from "../database/models/Contract";
+import EventEmitter from "events";
+import { HTTPStatus } from "../utils";
 const ethers = hre.ethers;
 import TS from "../../artifacts/contracts/Tokens.sol/Tokens.json";
 import User from "../database/models/User";
+import { Contract } from "ethers";
+import HistoryTokens from "../database/models/HistoryTokens";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 dotenv.config();
 
 export default class TransactionsApi {
@@ -18,43 +22,34 @@ export default class TransactionsApi {
         this.sequelize = sequelize;
     }
 
-    public static async Transaction(options: { token: any, amountTokens: string, addresContract: string }) : Promise<any> {
+    public static async Transaction(token: any, amountTokens: string, addresContract: string ) : Promise<string> {
         try {
-            const {token, amountTokens, addresContract} = options;
-
-            if (!amountTokens || !addresContract) {
-                throw new CustomError({
-                    status: 400,
-                    message: "All parameters are required.",
-                });
-            }
 
             const userAddress = token.verify.user.address;
 
             let userBalance = await ethers.utils.formatEther(await ethers.provider.getBalance(userAddress));
             if(+amountTokens > +userBalance) {
                 throw new CustomError({
-                    status: 400,
+                    status: HTTPStatus.NOT_ACCEPTABLE,
                     message: "Insufficient funds.",
                 });
             };
 
-            const contractFoundDB = await this.GetContract(addresContract);
+            const contractFoundDB = await this.GetContractAndOwner(addresContract);
             if(contractFoundDB == null) {
                 throw new CustomError({
-                    status: 400,
+                    status: HTTPStatus.NOT_FOUND,
                     message: "Contract not found.",
                 });
             }
 
-            // колличество токенов тип строковый
             const ether = `${ethers.utils.parseEther(amountTokens)}`;
 
             const userSigner = await this.GetSigner(userAddress);
             const userFoundDB = await this.GetUser(userSigner.address);
 
             const ownerSigner = await this.GetSigner(contractFoundDB.user.address);
-            const ownerFoundDB = contractFoundDB.user;
+            const ownerFoundDB: User = contractFoundDB.user;
 
             const DataBase = { userFoundDB, ownerFoundDB, contractFoundDB, amountTokens };
 
@@ -62,108 +57,135 @@ export default class TransactionsApi {
 
             const BlocChain = { userSigner, ownerSigner, ether};
 
-            await ListenerApi.TransactionListener(BlocChain, SmartConstract, DataBase);
+            await this.ListenerTransaction(BlocChain, SmartConstract, DataBase);
 
-            return {
-                status: 201,
-                message: "The funds have been sent.",
-            };
+            const message = "The funds have been sent."
+            
+            return message;
         }
         catch(e) {
             throw e;
         }
     }
 
-    public static async creatrContract(options: {token: any, name: string, symbol: string}) : Promise<any> {
-        try {
+    public static async creatrContract(token: any, name: string, symbol: string) : Promise<string[]> {
 
-            const {token, name, symbol} = options;
+        const addressOwner = token.verify.user.address;
+        const ownerSigner = await this.GetSigner(addressOwner);
 
-            if (!name || !symbol) {
-                throw new CustomError({
-                    status: 400,
-                    message: "All parameters are required.",
-                });
-            }
+        const ether: string = `${ethers.utils.parseEther('50')}`;
 
-            const addressOwner = token.verify.user.address;
-            const ownerSigner = await this.GetSigner(addressOwner);
+        const contractFactory = await ethers.getContractFactory('Tokens', ownerSigner);
+        const contractCreate = await contractFactory.deploy(name, symbol, ether, ownerSigner.address);
+        await contractCreate.deployed();
 
-            const ether: string = `${ethers.utils.parseEther('50')}`;
+        const ownerFoundDB = await this.GetUser(token.verify.user.address);
 
-            const contractFactory = await ethers.getContractFactory('Tokens', ownerSigner.address);
-            const contractCreate = await contractFactory.deploy(name, symbol, ether, ownerSigner.address);
-            await contractCreate.deployed();
+        let createContractDB = await ContractDB.create({
+            smart: contractCreate.address,
+            ownerId: ownerFoundDB.id,
+            name: name,
+            symbol: symbol
+        });
 
-            const ownerFoundDB = await this.GetUser(token.verify.user.address);
+        if (!createContractDB) {
+            throw new CustomError({
+                status: HTTPStatus.INTERNAL,
+                message:
+                    "Internal server error: could not connect to database.",
+            });
+        };
 
-            let createContractDB = await Contract.create({
-                smart: contractCreate.address,
-                ownerId: ownerFoundDB.id,
-                name: name,
-                symbol: symbol
+        const contract = await this.Contract(ownerSigner, contractCreate.address);
+        const ballance = ethers.utils.formatEther(await contract.balanceOf(ownerSigner.address));
+        const result = [contractCreate.address, name, symbol, ballance];
+
+        return result;
+    }
+
+    public static async ballance(token: any, addresContract: string ) : Promise<string> {
+
+        const userAddress = token.verify.user.address;
+        
+        const userSigner = await this.GetSigner(userAddress);
+        const contract = await this.Contract(userSigner, addresContract);
+
+        const Balance = await contract.balanceOf(userSigner.address);
+        const BalanceFormatEther = ethers.utils.formatEther(Balance);
+
+        const message = `Your balance: ${BalanceFormatEther}`;
+
+        return message;
+    }
+
+    private static async ListenerTransaction(
+        BlocChain: {
+            userSigner: SignerWithAddress, 
+            ownerSigner: SignerWithAddress, 
+            ether: string
+        }, 
+        SmartConstract: Contract, 
+        DataBase: {
+            userFoundDB: User, 
+            ownerFoundDB: User, 
+            contractFoundDB: ContractDB, 
+            amountTokens: string
+        }
+        ) {
+
+        const listener = new EventEmitter;
+
+        listener.on('event', async (BlocChain, SmartConstract, DataBase) => {
+
+            const {userSigner, ownerSigner, ether} = BlocChain;
+            const {userFoundDB, ownerFoundDB, contractFoundDB, amountTokens} = DataBase;
+
+            const historyCreaty = await HistoryTokens.create({
+                toId: ownerFoundDB.id,
+                fromId: userFoundDB.id,
+                smartId: contractFoundDB.id,
+                value: +amountTokens,
+                status_from_id: 1,
+                status_to_id: 1
             });
 
-            if (!createContractDB) {
-                throw new CustomError({
-                    status: 500,
-                    message:
-                        "Internal server error: could not connect to database.",
+            const info = {
+                to: ownerSigner.address,
+                value: ether
+            }
+            const infoSend = await userSigner.sendTransaction(info);
+            const transactionEnd = await infoSend.wait();
+
+            if(transactionEnd.status == 1) {
+                await historyCreaty.update({
+                    status_to_id: 2,
+                    blockHash_to: transactionEnd.transactionHash
                 });
-            };
 
-            const contract = await this.Contract(ownerSigner, contractCreate.address);
-            const ballance = ethers.utils.formatEther(await contract.balanceOf(ownerSigner.address));
-            const result = [contractCreate.address, name, symbol, ballance];
+                const transferContract = await SmartConstract.transfer(userSigner.address, ether);
 
-            return {
-                status: 201,
-                message: "Contract was successfully created.",
-                result,
-            };
-        }
-        catch(e) {
-            throw e;
-        }
-    }
-
-    public static async ballance(options: { token: any, addresContract: any }) : Promise<any> {
-        try {
-            const {token, addresContract} = options;
-            const userAddress = token.verify.user.address;
-
-            if (!addresContract) {
-                throw new CustomError({
-                    status: 400,
-                    message: "All parameters are required.",
+                const historyUpdate = await historyCreaty.update({
+                    status_from_id: 2,
+                    blockHash_from: transferContract.hash
                 });
             }
-            
-            const userSigner = await this.GetSigner(userAddress);
-            const contract = await this.Contract(userSigner, addresContract);
 
-            const balance = ethers.utils.formatEther(await contract.balanceOf(userSigner.address));
+            else {
+                const historyUpdate = await historyCreaty.update({
+                    status_to_id: 3,
+                });
+            }
+        });
 
-            return {
-                status: 201,
-                message: `Your balance: ${balance}`,
-            };
-        }
-        catch(e) {
-            throw e;
-        }
+        await listener.emit('event', BlocChain, SmartConstract, DataBase);
     }
 
-    // ======================================================
-    // =========== Вспомогательные ==========================
-    // ======================================================
-
-    private static async GetSigner(address: string) : Promise<any> {
-        let account = await ethers.getSigner(address);
-        return account;
+    private static async GetSigner(address: string) : Promise<SignerWithAddress> {
+        const userSigner = await ethers.getSigner(address);
+        return userSigner;
     }
 
-    public static async Contract(userSigner: any, contractAddress: string) : Promise<any> {
+    private static async Contract(userSigner: SignerWithAddress, contractAddress: string) : Promise<Contract> {
 
         const contract = new ethers.Contract(
             contractAddress,
@@ -174,8 +196,8 @@ export default class TransactionsApi {
         return contract;
     }
 
-    private static async GetContract(_smart: string) : Promise<Contract> {
-        const contractFoundDB = await Contract.findOne({
+    private static async GetContractAndOwner(_smart: string) : Promise<ContractDB> {
+        const contractFoundDB = await ContractDB.findOne({
             where: {
                 smart: _smart,
             },

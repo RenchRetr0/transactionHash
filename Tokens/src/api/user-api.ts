@@ -29,73 +29,42 @@ export default class UserApi {
         this.sequelize = sequelize;
     }
 
-    public static async signUp(options: {login: string, address: string, password:string;}) : Promise<any> {
-        try{
+    public static async signUp(
+        login: string, 
+        address: string, 
+        password:string
+    ) : Promise<string> {
 
-            const {login, address, password} = options;
+        const passwordHash = await bcrypt.hash(
+            password,
+            Number(process.env.SALT_ROUNDS) || 10
+        );
 
-            if (!login && !address && !password) {
-                throw new CustomError({
-                    status: 400,
-                    message: "All parameters are required.",
-                });
-            }
+        const createdUser = await User.create({
+            login: login,
+            address: address,
+            password: passwordHash,
+            roleId: 3
+        });
 
-            if (
-                password.search(
-                    /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[\(\)\[\]\{\}\~?<>;:\\_\/`+=\-\|!@#\$%\^&\*\.])(?=.{8,})/i
-                ) === -1
-            ) {
-                throw new CustomError({
-                    status: 400,
-                    message:
-                        "Password must be at least 8 characters, must contain 1 special character and number.",
-                });
-            }
-
-            const passwordHash = await bcrypt.hash(
-                password,
-                Number(process.env.SALT_ROUNDS) || 10
-            );
-
-            const createdUser = await User.create({
-                login: login,
-                address: address,
-                password: passwordHash,
-                roleId: 3
+        if (!createdUser) {
+            throw new CustomError({
+                status: 500,
+                message:
+                    "Internal server error: could not connect to database.",
             });
+        };
 
-            if (!createdUser) {
-                throw new CustomError({
-                    status: 500,
-                    message:
-                        "Internal server error: could not connect to database.",
-                });
-            }
-            
-            return {
-                status: 201,
-                message: "User was successfully created.",
-            };
-
-        } catch (e) {
-            throw e;
-        }
+        const message = "User was successfully created."
+        
+        return message;
     }
 
-    public static async signIn(options: {
-        login: string;
-        password: string;
-    }): Promise<any> {
+    public static async signIn(
+        login: string,
+        password: string
+    ): Promise<Object> {
         try {
-            const { login, password } = options;
-
-            if (!login && !password) {
-                throw new CustomError({
-                    status: 400,
-                    message: "All parameters are required.",
-                });
-            }
 
             let userFound = await User.findOne({
                 include: [Role],
@@ -139,8 +108,6 @@ export default class UserApi {
             );
 
             return {
-                status: 200,
-                message: "OK",
                 user,
                 token,
             };
@@ -152,20 +119,6 @@ export default class UserApi {
     public static async UserValidateJwt(options: { token: string }) {
         try {
             const { token } = options;
-
-            if (!token) {
-                throw new CustomError({
-                    status: 400,
-                    message: "All parameters are required.",
-                });
-            }
-
-            if (!options) {
-                throw new CustomError({
-                    status: 400,
-                    message: "Parameters is required.",
-                });
-            }
 
             const verify = await jwt.verify(token, process.env.TOKEN_SECRET);
 

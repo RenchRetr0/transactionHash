@@ -39,20 +39,6 @@ export default class AuthApi {
         try {
             const { token } = options;
 
-            if (!token) {
-                throw new CustomError({
-                    status: 400,
-                    message: "All parameters are required.",
-                });
-            }
-
-            if (!options) {
-                throw new CustomError({
-                    status: 400,
-                    message: "Parameters is required.",
-                });
-            }
-
             const verify = await jwt.verify(token, process.env.TOKEN_SECRET);
 
             if (typeof verify === "string") {

@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import AuthApi, { ValidateJWTResponse } from "./user-api";
+import UserApi, { ValidateJWTResponse } from "./user-api";
 import CustomError from "../CustomError";
 
 export default async function validateJWT(
@@ -15,7 +15,7 @@ export default async function validateJWT(
                 message: "Token not defined.",
             });
         }
-        const response: ValidateJWTResponse = await AuthApi.UserValidateJwt({
+        const response: ValidateJWTResponse = await UserApi.UserValidateJwt({
             token: token,
         });
 

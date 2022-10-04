@@ -6,8 +6,9 @@ import { Op, Sequelize } from "sequelize";
 import HistoryTokens from "../database/models/HistoryTokens";
 import Contract from "../database/models/Contract";
 import Status from "../database/models/Status";
+import { HTTPStatus } from "../utils";
 import Role from "../database/models/Role";
-import { ethers, providers } from "ethers";
+import { ethers } from "ethers";
 
 export default class SearchApi {
     sequelize: Sequelize;
@@ -16,154 +17,112 @@ export default class SearchApi {
         this.sequelize = sequelize;
     }
 
-    public static async GetHistorys() : Promise<any> {
-        try {
-            const historysFound = await HistoryTokens.findAll({
-                include: [
-                    {
-                        model: Contract,
-                        include: [
-                            {
-                                model: User,
-                                attributes: {
-                                    exclude: ["id", "password", "roleId", "createdAt", "updatedAt", "deletedAt"],
-                                },
+    public static async GetHistorys() : Promise<HistoryTokens[]> {
+        const historysFound = await HistoryTokens.findAll({
+            include: [
+                {
+                    model: Contract,
+                    include: [
+                        {
+                            model: User,
+                            attributes: {
+                                exclude: ["id", "password", "roleId", "createdAt", "updatedAt", "deletedAt"],
                             },
-                        ],
-                        attributes: {
-                            exclude: ["id", "ownerId"],
                         },
+                    ],
+                    attributes: {
+                        exclude: ["id", "ownerId"],
                     },
-                    {
-                        model: Status,
-                        as: 'status_from_id',
-                        association: 'status_from',
-                        attributes: {
-                            exclude: ["id"],
-                        },
-                    },
-                    {
-                        model: Status,
-                        as: 'status_to_id',
-                        association: 'status_to',
-                        attributes: {
-                            exclude: ["id"],
-                        },
-                    },
-                    {
-                        model: User,
-                        as: 'toId',
-                        association: 'to',
-                        attributes: ['login', 'address'],
-                        include: [
-                            {
-                                model: Role,
-                                attributes: ['role'],
-                            },
-                        ],
-                    },
-                    {
-                        model: User,
-                        as: 'fromId',
-                        association: 'from',
-                        attributes: ['login', 'address'],
-                        include: [
-                            {
-                                model: Role,
-                                attributes: ['role'],
-                            },
-                        ],
-                    },
-                ],
-                attributes: {
-                    exclude: ["id", "smartId", "status_from_id", "status_to_id", "toId", "fromId"],
                 },
+                {
+                    model: Status,
+                    as: 'status_from_id',
+                    association: 'status_from',
+                    attributes: {
+                        exclude: ["id"],
+                    },
+                },
+                {
+                    model: Status,
+                    as: 'status_to_id',
+                    association: 'status_to',
+                    attributes: {
+                        exclude: ["id"],
+                    },
+                },
+                {
+                    model: User,
+                    as: 'toId',
+                    association: 'to',
+                    attributes: ['login', 'address'],
+                    include: [
+                        {
+                            model: Role,
+                            attributes: ['role'],
+                        },
+                    ],
+                },
+                {
+                    model: User,
+                    as: 'fromId',
+                    association: 'from',
+                    attributes: ['login', 'address'],
+                    include: [
+                        {
+                            model: Role,
+                            attributes: ['role'],
+                        },
+                    ],
+                },
+            ],
+            attributes: {
+                exclude: ["id", "smartId", "status_from_id", "status_to_id", "toId", "fromId"],
+            },
+        });
+
+        return historysFound;
+    }
+
+    public static async GetHistory(userAddress: string) : Promise<HistoryTokens[]> {
+
+        const userFound = await this.GetUser(userAddress);
+
+        if(!userFound) {
+            throw new CustomError({
+                status: HTTPStatus.NOT_FOUND,
+                message: "Address not found.",
             });
-
-            return {
-                status: 201,
-                historysFound
-            };
-        } 
-        catch(e) {
-            throw e;
         }
+
+        const historFound = await this.GetHistoryAt(userFound.id);
+
+        if(!historFound) {
+            throw new CustomError({
+                status: HTTPStatus.NOT_FOUND,
+                message: "Address not found.",
+            });
+        }
+
+        return historFound;
     }
 
-    public static async GetHistory(options: {userAddress: string}) : Promise<any> {
-        try {
+    public static async GetTransactionReceipt(hashTransaction: string) : Promise<ethers.providers.TransactionReceipt> {
 
-            const { userAddress } = options;
+        const EthereumProvider: any = network.provider;
+        const provider = new ethers.providers.Web3Provider(EthereumProvider)
+        const TransactionReceipt = await provider.getTransactionReceipt(hashTransaction);
 
-            if (!userAddress)  {
-                throw new CustomError({
-                    status: 400,
-                    message: "All parameters are required.",
-                });
-            }
-
-            const userFound = await this.GetUser(userAddress);
-
-            if(!userFound) {
-                throw new CustomError({
-                    status: 400,
-                    message: "Address not found.",
-                });
-            }
-
-            const historFound = await this.AddresUser(userFound.id);
-
-            if(!historFound) {
-                throw new CustomError({
-                    status: 400,
-                    message: "Address not found.",
-                });
-            }
-
-            return {
-                status: 201,
-                historFound
-            };
-
+        if(!TransactionReceipt) {
+            throw new CustomError({
+                status: HTTPStatus.NOT_FOUND,
+                message: "Transaction not found.",
+            });
         }
-        catch(e) {
-            throw e;
-        }
+        
+        return TransactionReceipt;
     }
 
-    public static async GetTransactionReceipt(options: {hashTransaction: string}) : Promise<any> {
-        try {
-            const { hashTransaction } = options;
-
-            if (!hashTransaction)  {
-                throw new CustomError({
-                    status: 400,
-                    message: "All parameters are required.",
-                });
-            }
-
-            const EthereumProvider: any = network.provider;
-            const provider = new ethers.providers.Web3Provider(EthereumProvider)
-            const TransactionReceipt = await provider.getTransactionReceipt(hashTransaction);
-
-            if(!TransactionReceipt) {
-                throw new CustomError({
-                    status: 400,
-                    message: "Transaction not found.",
-                });
-            }
-            
-            return {
-                status: 201,
-                TransactionReceipt
-            }
-        }
-        catch(e) {
-            throw e;
-        }
-    }
-
-    private static async GetUser(address: string) : Promise<any> {
+    private static async GetUser(address: string) : Promise<User> {
         const userFound = await User.findOne({
             where: {
                 address: address,
@@ -173,7 +132,7 @@ export default class SearchApi {
         return userFound;
     }
 
-    private static async AddresUser(userId: number) : Promise<any> {
+    private static async GetHistoryAt(userId: number) : Promise<HistoryTokens[]> {
         const historFound = await HistoryTokens.findAll({
             where: {
                 [Op.or]: [

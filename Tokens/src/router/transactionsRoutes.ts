@@ -2,6 +2,8 @@ import express from "express";
 import { Request, Response } from "express";
 import UserValidateJWT from "../api/UserValidateJWT";
 import TransactionsApi from "../api/transactions-api";
+import { HTTPStatus } from "../utils";
+import CustomError from "../CustomError";
 
 export default class TransactionsRoutes {
     router = express.Router();
@@ -18,8 +20,18 @@ export default class TransactionsRoutes {
 
     private async transaction(req: Request, res: Response) {
         try {
-            const response = await TransactionsApi.Transaction(req.body);
-            res.status(response.status).json(response);
+            
+            const {token, amountTokens, addresContract} = req.body;
+
+            if (!amountTokens || !addresContract) {
+                throw new CustomError({
+                    status: HTTPStatus.BAD_REQUEST,
+                    message: "All parameters are required.",
+                });
+            }
+
+            const response = await TransactionsApi.Transaction(token, amountTokens, addresContract);
+            res.json(response);
         } catch (e) {
             console.log(e);
             res.status(e?.status || 500).json(e);
@@ -28,8 +40,17 @@ export default class TransactionsRoutes {
 
     private async ballance(req: Request, res: Response) {
         try {
-            const response = await TransactionsApi.ballance(req.body);
-            res.status(response.status).json(response);
+            const {token, addresContract} = req.body;
+
+            if (!addresContract) {
+                throw new CustomError({
+                    status: HTTPStatus.BAD_REQUEST,
+                    message: "All parameters are required.",
+                });
+            };
+            
+            const response = await TransactionsApi.ballance(token, addresContract);
+            res.json(response);
         } catch (e) {
             console.log(e);
             res.status(e?.status || 500).json(e);
@@ -38,8 +59,18 @@ export default class TransactionsRoutes {
 
     private async create(req: Request, res: Response) {
         try {
-            const response = await TransactionsApi.creatrContract(req.body);
-            res.status(response.status).json(response);
+
+            const {token, name, symbol} = req.body;
+
+            if (!name || !symbol) {
+                throw new CustomError({
+                    status: HTTPStatus.BAD_REQUEST,
+                    message: "All parameters are required.",
+                });
+            }
+
+            const response = await TransactionsApi.creatrContract(token, name, symbol);
+            res.json(response);
         } catch (e) {
             console.log(e);
             res.status(e?.status || 500).json(e);
