@@ -1,7 +1,7 @@
 import express from "express";
 import { Request, Response } from "express";
 import UserValidateJWT from "../api/UserValidateJWT";
-import TransactionsApi from "../api/transactions-api";
+import ContractApi from "../api/contract-api";
 import { HTTPStatus } from "../utils";
 import CustomError from "../CustomError";
 
@@ -30,7 +30,7 @@ export default class TransactionsRoutes {
                 });
             }
 
-            const response = await TransactionsApi.Transaction(token, amountTokens, addresContract);
+            const response = await ContractApi.Transaction(token, amountTokens, addresContract);
             res.json(response);
         } catch (e) {
             console.log(e);
@@ -49,7 +49,7 @@ export default class TransactionsRoutes {
                 });
             };
             
-            const response = await TransactionsApi.ballance(token, addresContract);
+            const response = await ContractApi.ballance(token, addresContract);
             res.json(response);
         } catch (e) {
             console.log(e);
@@ -69,7 +69,7 @@ export default class TransactionsRoutes {
                 });
             }
 
-            const response = await TransactionsApi.creatrContract(token, name, symbol);
+            const response = await ContractApi.creatrContract(token, name, symbol);
             res.json(response);
         } catch (e) {
             console.log(e);

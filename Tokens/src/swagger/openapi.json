@@ -123,7 +123,7 @@
         }
       }
     },
-    "/trans/smart": {
+    "/contract/create": {
       "post": {
         "security": [
           {
@@ -179,7 +179,7 @@
         }
       }
     },
-    "/trans/ballance": {
+    "/contract/ballance": {
       "post": {
         "security": [
           {
@@ -235,7 +235,7 @@
         }
       }
     },
-    "/trans/mint": {
+    "/contract/transaction": {
       "post": {
         "security": [
           {
@@ -300,7 +300,7 @@
         ],
         "summary": "Getting transaction history",
         "tags": [
-          "Search"
+          "History"
         ],
         "operationId": "Histories",
         "responses": {
@@ -346,7 +346,7 @@
         ],
         "summary": "Address history search",
         "tags": [
-          "Search"
+          "History"
         ],
         "operationId": "SearchAddress",
         "requestBody": {
@@ -393,7 +393,7 @@
         }
       }
     },
-    "/search/hash": {
+    "/transactionreceipt": {
       "post": {
         "security": [
           {
@@ -402,7 +402,7 @@
         ],
         "summary": "Transaction Block View",
         "tags": [
-          "Search"
+          "Receipt"
         ],
         "operationId": "SearchHash",
         "requestBody": {
@@ -421,7 +421,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ResponsesTransactionHash"
+                  "$ref": "#/components/schemas/Receipt"
                 }
               }
             }
@@ -502,16 +502,11 @@
       },
       "SignUpUser": {
         "title": "Responses User",
-        "type": "object",
+        "type": "string",
         "required": [
-          "status",
           "message"
         ],
         "properties": {
-          "status": {
-            "type": "integer",
-            "example": 201
-          },
           "message": {
             "type": "string",
             "example": "User was successfully created."
@@ -609,22 +604,9 @@
       "ResponsesUser": {
         "title": "Respon User",
         "type": "object",
-        "required": [
-          "status",
-          "message",
-          "token"
-        ],
         "properties": {
-          "status": {
-            "type": "number",
-            "example": 201
-          },
           "User": {
             "$ref": "#/components/schemas/User2"
-          },
-          "message": {
-            "type": "string",
-            "example": "ok"
           },
           "token": {
             "type": "string"
@@ -680,19 +662,7 @@
       "ResponsesSmart": {
         "title": "Response of the generated smart contract",
         "type": "object",
-        "required": [
-          "status",
-          "message"
-        ],
         "properties": {
-          "status": {
-            "type": "number",
-            "example": 201
-          },
-          "message": {
-            "type": "string",
-            "example": "Contract was successfully created."
-          },
           "Smart": {
             "$ref": "#/components/schemas/Smart"
           }
@@ -714,15 +684,7 @@
       "ResponsesBalance": {
         "title": "Balance respon",
         "type": "object",
-        "required": [
-          "status",
-          "message"
-        ],
         "properties": {
-          "status": {
-            "type": "number",
-            "example": 201
-          },
           "message": {
             "type": "string",
             "example": "Your balance: 0.0"
@@ -750,15 +712,7 @@
       "ResponsesTransaction": {
         "title": "Transaction respon",
         "type": "object",
-        "required": [
-          "status",
-          "message"
-        ],
         "properties": {
-          "status": {
-            "type": "number",
-            "example": 201
-          },
           "message": {
             "type": "string",
             "example": "The funds have been sent."
@@ -951,19 +905,6 @@
           "type": {
             "type": "number",
             "example": 2
-          }
-        }
-      },
-      "ResponsesTransactionHash": {
-        "title": "Hash transaction respons",
-        "type": "object",
-        "properties": {
-          "status": {
-            "type": "number",
-            "example": 201
-          },
-          "receipt": {
-            "$ref": "#/components/schemas/Receipt"
           }
         }
       },

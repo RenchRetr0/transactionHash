@@ -29,11 +29,7 @@ export default class UserApi {
         this.sequelize = sequelize;
     }
 
-    public static async signUp(
-        login: string, 
-        address: string, 
-        password:string
-    ) : Promise<string> {
+    public static async signUp( login: string, address: string, password:string ) : Promise<object> {
 
         const passwordHash = await bcrypt.hash(
             password,
@@ -55,112 +51,100 @@ export default class UserApi {
             });
         };
 
-        const message = "User was successfully created."
-        
-        return message;
+        return {
+            message: "User was successfully created."
+        };
     }
 
-    public static async signIn(
-        login: string,
-        password: string
-    ): Promise<Object> {
-        try {
-
-            let userFound = await User.findOne({
-                include: [Role],
-                where: {
-                    login: login,
-                }
-            });
-
-            if (!userFound) {
-                throw new CustomError({
-                    status: 404,
-                    message: "Cannot find user with current login",
-                });
+    public static async signIn( login: string, password: string ): Promise<Object> {
+        let userFound = await User.findOne({
+            include: [Role],
+            where: {
+                login: login,
             }
-            
-            const hashCompare = await bcrypt.compare(password, userFound.password);
-            if (!hashCompare) {
-                throw new CustomError({
-                    status: 400,
-                    message: "Invalid login or password.",
-                });
-            };
+        });
 
-            const user = [userFound.login, userFound.address, userFound.role.role];
-
-            const token = jwt.sign(
-                {
-                    data: {
-                        id: userFound.id,
-                        login: userFound.login,
-                        addresx: userFound.address,
-                        role: userFound.role.role,
-                        createdAt: userFound.createdAt,
-                        updatedAt: userFound.updatedAt,
-                    },
-                },
-                process.env.TOKEN_SECRET,
-                {
-                    expiresIn: "86400000",
-                }
-            );
-
-            return {
-                user,
-                token,
-            };
-        } catch (e) {
-            throw e;
+        if (!userFound) {
+            throw new CustomError({
+                status: 404,
+                message: "Cannot find user with current login",
+            });
         }
+        
+        const hashCompare = await bcrypt.compare(password, userFound.password);
+        if (!hashCompare) {
+            throw new CustomError({
+                status: 400,
+                message: "Invalid login or password.",
+            });
+        };
+
+        const user = [userFound.login, userFound.address, userFound.role.role];
+
+        const token = jwt.sign(
+            {
+                data: {
+                    id: userFound.id,
+                    login: userFound.login,
+                    addresx: userFound.address,
+                    role: userFound.role.role,
+                    createdAt: userFound.createdAt,
+                    updatedAt: userFound.updatedAt,
+                },
+            },
+            process.env.TOKEN_SECRET,
+            {
+                expiresIn: "86400000",
+            }
+        );
+
+        return {
+            user,
+            token,
+        };
     }
 
     public static async UserValidateJwt(options: { token: string }) {
-        try {
-            const { token } = options;
+        const { token } = options;
 
-            const verify = await jwt.verify(token, process.env.TOKEN_SECRET);
+        const verify = await jwt.verify(token, process.env.TOKEN_SECRET);
 
-            if (typeof verify === "string") {
-                throw new CustomError({
-                    status: 500,
-                    message: "Internal server error",
-                });
-            }
-
-            if (!verify) {
-                throw new CustomError({
-                    status: 401,
-                    message: "Unauthorized.",
-                });
-            }
-
-            const user = await User.findByPk(verify.data.id, {
-                attributes: {
-                    exclude: ["id", "password", "createdAt", "updatedAt", "deletedAt"],
-                },
+        if (typeof verify === "string") {
+            throw new CustomError({
+                status: 500,
+                message: "Internal server error",
             });
-
-            if (!user) {
-                throw new CustomError({
-                    status: 404,
-                    message: "User does not exist.",
-                });
-            }
-
-            return {
-                status: 200,
-                message: "OK",
-                verify: {
-                    user,
-                    iat: verify.iat,
-                    exp: verify.exp,
-                },
-            };
-        } catch (e) {
-            throw e;
         }
+
+        if (!verify) {
+            throw new CustomError({
+                status: 401,
+                message: "Unauthorized.",
+            });
+        }
+
+        const user = await User.findByPk(verify.data.id, {
+            attributes: {
+                exclude: ["id", "password", "createdAt", "updatedAt", "deletedAt"],
+            },
+        });
+
+        if (!user) {
+            throw new CustomError({
+                status: 404,
+                message: "User does not exist.",
+            });
+        }
+
+        return {
+            status: 200,
+            message: "OK",
+            verify: {
+                user,
+                iat: verify.iat,
+                exp: verify.exp,
+            },
+        };
     }
 }
 
