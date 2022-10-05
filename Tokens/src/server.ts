@@ -2,9 +2,9 @@ import App from "./app";
 import cors from "cors";
 import express from "express";
 import morgan from "morgan";
-import TransactionsRoutes from './router/transactionsRoutes';
+import ContractRoutes from './router/contractRoutes';
 import UserRoutes from "./router/userRoutes";
-import SearchRoutes from "./router/searchRoutes";
+import HistoryRoutes from "./router/historyRoutes";
 
 const app = new App({
     port: Number(process.env.PORT) || 3040,
@@ -17,9 +17,9 @@ const app = new App({
         morgan('dev'),
     ],
     routes: [
-        new TransactionsRoutes(),
+        new ContractRoutes(),
         new UserRoutes(),
-        new SearchRoutes()
+        new HistoryRoutes()
     ]
 });
 
