@@ -5,6 +5,7 @@ import morgan from "morgan";
 import ContractRoutes from './router/contractRoutes';
 import UserRoutes from "./router/userRoutes";
 import HistoryRoutes from "./router/historyRoutes";
+import ReceiptRoutes from "./router/receipt-api";
 
 const app = new App({
     port: Number(process.env.PORT) || 3040,
@@ -19,7 +20,8 @@ const app = new App({
     routes: [
         new ContractRoutes(),
         new UserRoutes(),
-        new HistoryRoutes()
+        new HistoryRoutes(),
+        new ReceiptRoutes()
     ]
 });
 
